@@ -104,6 +104,8 @@ class bookingcom extends curl{
             return $email." BANNED\n"; 
         } elseif ($json->errors[0] == 1203) {
             return $email." SALAH PASSWORD\n"; 
+        } elseif ($json->errors[0] == 1302) {
+            return $email." TIDAK TERDAFTAR\n"; 
         } else {
             echo "[!] UNKNOWN ERROR: ".$check."\n"; 
             sleep(2);
@@ -167,4 +169,3 @@ if(file_exists($file)) {
 } else {
     goto start;
 }
-
