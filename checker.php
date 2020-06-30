@@ -35,7 +35,7 @@ class curl {
         if(is_numeric(strpos($url, 'account.booking.com'))) {
             curl_setopt($this->ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0');
         } else {
-            curl_setopt($this->ch, CURLOPT_USERAGENT, 'Booking.App/22.9 Android/9; Type: mobile; AppStore: google; Brand: xiaomi; Model: Redmi Note 8;');
+            curl_setopt($this->ch, CURLOPT_USERAGENT, 'Booking.App/22.9 Android/9; Type: mobile; AppStore: google; Brand: xiaomi; Model: Redmi Note '.rand(1,8).';');
         }
         curl_setopt($this->ch, CURLOPT_HEADER, false);
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $header);
@@ -155,7 +155,7 @@ class bookingcom extends curl{
 /**
  * Running
  */
-$version = '1.4';
+$version = '1.5';
 $update = file_get_contents('https://econxn.id/setset/turu.json');
 $json = json_decode($update);
 if($json->version != $version) {
@@ -207,17 +207,24 @@ if(file_exists($file)) {
 
         if($check->next_step == 'redirect') { 
 
+            $re=0;
             login_apk:
             $login_apk = $bocom->login_apk($email, $password, $device_id);
 
             if(!isset($login_apk->auth_token)) {
-                if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.'))) {
-                    echo "[!] Tunggu dulu ip region full akses..gunakan VPN yang sepi pengguna Booking.com\n";
-                    sleep(5);
-                    goto login_apk;
-                } else {
-                    echo "[".$no++."] ACTIVE - ".$email." Check Reward Later [".$login_apk->message."]\n";
+                if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.')) || $login_apk->message == 'AUTH_STATUS_FAILED' || $login_apk->message == 'AUTH_STATUS_TOKEN_ERROR') {
+                    echo "[!] Tunggu dulu ada masalah..\n";
+                    sleep(10);
+                    $re++;
+                    if ($re < 20) {
+                        goto login_apk_;
+                    }
+                    $re=0;
+                    echo "Skipp..try again later..\n";
                 }
+                
+                echo "[".$no++."] ACTIVE - ".$email." Check Reward Later [".$login_apk->message."]\n";
+                
                 
             } else {
                 $reward = $bocom->reward($device_id, $login_apk->auth_token);
@@ -239,17 +246,23 @@ if(file_exists($file)) {
           
         } elseif ($check->next_step == '/account-disabled') {
 
+            $re_=0;
             login_apk_:
             $login_apk = $bocom->login_apk($email, $password, $device_id);
 
             if(!isset($login_apk->auth_token)) {
-                if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.'))) {
-                    echo "[!] Tunggu dulu ip region full akses..gunakan VPN yang sepi pengguna Booking.com\n";
-                    sleep(5);
-                    goto login_apk_;
-                } else {
-                    echo "[".$no++."] BANNED - ".$email." Check Reward Later [".$login_apk->message."]\n";
-                }
+                if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.')) || $login_apk->message == 'AUTH_STATUS_FAILED' || $login_apk->message == 'AUTH_STATUS_TOKEN_ERROR') {
+                    echo "[!] Tunggu dulu ada masalah..\n";
+                    sleep(10);
+                    $re_++;
+                    if ($re_ < 20) {
+                        goto login_apk_;
+                    }
+                    $re_=0;
+                    echo "Skipp..try again later..\n";
+                } 
+
+                echo "[".$no++."] BANNED - ".$email." Check Reward Later [".$login_apk->message."]\n"; 
 
             } else {
                 $reward = $bocom->reward($device_id, $login_apk->auth_token);
