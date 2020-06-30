@@ -213,7 +213,7 @@ if(file_exists($file)) {
 
             if(!isset($login_apk->auth_token)) {
                 if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.')) || $login_apk->message == 'AUTH_STATUS_FAILED' || $login_apk->message == 'AUTH_STATUS_TOKEN_ERROR') {
-                    echo "[!] Tunggu dulu ada masalah..\n";
+                    echo "[!] Tunggu dulu ada masalah..Coba gunakan VPN region lain\n";
                     sleep(10);
                     $re++;
                     if ($re < 20) {
@@ -252,7 +252,7 @@ if(file_exists($file)) {
 
             if(!isset($login_apk->auth_token)) {
                 if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.')) || $login_apk->message == 'AUTH_STATUS_FAILED' || $login_apk->message == 'AUTH_STATUS_TOKEN_ERROR') {
-                    echo "[!] Tunggu dulu ada masalah..\n";
+                    echo "[!] Tunggu dulu ada masalah..Coba gunakan VPN region lain\n";
                     sleep(10);
                     $re_++;
                     if ($re_ < 20) {
