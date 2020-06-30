@@ -107,7 +107,7 @@ class bookingcom extends curl{
         } elseif ($json->errors[0] == 1203) {
             return $email." SALAH PASSWORD\n"; 
         } else {
-            return "[!] UNKNOWN ERROR\n"; 
+            echo "[!] UNKNOWN ERROR: ".$check."\n"; 
             sleep(2);
             goto retry;
         }       
