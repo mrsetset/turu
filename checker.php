@@ -88,6 +88,7 @@ class bookingcom extends curl{
             "include_identity_users": "1"
         }';
         
+        retry:
         $check = $this->request ($method, $endpoint, $param, $header);
 
         $json = json_decode($check);
@@ -110,6 +111,11 @@ class bookingcom extends curl{
             }
             
         } else {
+            if($json->code == "1008") {
+                echo "[!] Error [".$json->code."] ".$json->message."\n";
+                sleep(2);
+                goto retry;
+            }
             return "Error [".$json->code."] ".$json->message."\n"; 
         }         
     }
