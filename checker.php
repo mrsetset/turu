@@ -42,6 +42,7 @@ class curl {
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($this->ch, CURLOPT_CONNECTTIMEOUT, 10);
+        // curl_setopt($this->ch, CURLOPT_VERBOSE, 1);
         curl_setopt($this->ch, CURLOPT_TIMEOUT, 20);
         $this->result = curl_exec($this->ch);
         $this->error = curl_error($this->ch);
@@ -100,11 +101,20 @@ class bookingcom extends curl{
         return $json;       
     }
 
-    function login_apk($email, $password, $device_id, $header) {
+    function login_apk($email, $password, $device_id) {
 
         $method   = 'POST';
-        $header[] = 'Content-Type: application/json';
+
         $header[] = 'Cache-Control: no-cache';
+        $header[] = 'Authorization: Basic dGhlc2FpbnRzYnY6ZGdDVnlhcXZCeGdN';
+        $header[] = 'X-LIBRARY: okhttp+network-api';
+        $header[] = 'X-Booking-API-Version: 1';
+        $header[] = 'B-T: AAAAAAAAAAA=fNd1KP3jttsTlKwTo8blsNzYgfdTKF9YNxfv4FkF35Df8TGoMhjky-ouTGGyfivOFhBDJ9aOTuZSsZRY0jCoEwF-_VllKhfCz3qjTW5o8Iz4xVp70eTJDuwJyLj_MeVJZslo0eafGFtHNMrp8lRn65-UCgUsSdhUXOL9o1VsN4MA9W67f0KfW7gXIMT3xyVCK3ae_mX1p-b3gfwPHikRgg0hLazmGqWCZsW1JcTRWLJSlkCFKd1NxfN7sWD1nphRSzmyFSwsF5hW-rBI00qxTGZtgNBuh7TRMycETQ';
+        $header[] = 'Content-Type: application/x-gzip; contains="application/json"; charset=utf-8';
+        $header[] = 'Host: secure-iphone-xml.booking.com';
+        $header[] = 'Connection: Keep-Alive';
+        $header[] = 'Accept-Encoding: gzip';
+
 
         $endpoint = 'https://secure-iphone-xml.booking.com/json/mobile.login?&user_os=9&user_version=22.9-android&device_id='.$device_id.'&network_type=wifi&languagecode=en-us&display=normal_xxhdpi&affiliate_id=337862';
         
@@ -120,12 +130,21 @@ class bookingcom extends curl{
         return $json;
     }
 
-    function reward($device_id, $auth_token, $header) {
+    function reward($device_id, $auth_token) {
 
         $method   = 'GET';
+
+        $header[] = 'X-LIBRARY: okhttp+network-api';
+        $header[] = 'Authorization: Basic dGhlc2FpbnRzYnY6ZGdDVnlhcXZCeGdN';
+        $header[] = 'X-Booking-API-Version: 1';
+        $header[] = 'B-T: AAAAAAAAAAA=fNd1KP3jttsTlKwTo8blsNzYgfdTKF9YNxfv4FkF35Df8TGoMhjky-ouTGGyfivOFhBDJ9aOTuZSsZRY0jCoEwF-_VllKhfCz3qjTW5o8Iz4xVp70eTJDuwJyLj_MeVJZslo0eafGFtHNMrp8lRn65-UCgUsSdhUXOL9o1VsN4MA9W67f0KfW7gXIMT3xyVCK3ae_mX1p-b3gfwPHikRgg0hLazmGqWCZsW1JcTRWLJSlkCFKd1NxfN7sWD1nphRSzmyFSwsF5hW-rBI00qxTGZtgNBuh7TRMycETQ';
+        $header[] = 'Host: mobile-apps.booking.com';
+        $header[] = 'Connection: Keep-Alive';
+        $header[] = 'Accept-Encoding: gzip';
+
         $endpoint = 'https://mobile-apps.booking.com/json/mobile.getRewards?supports_cta_actions=1&app_supports_gem_rewards=1&currency_code=IDR&user_os=9&user_version=22.9-android&device_id='.$device_id.'&network_type=wifi&auth_token='.$auth_token.'&languagecode=en-us&display=normal_xxhdpi&affiliate_id=337862';
         
-        $reward = $this->request ($method, $endpoint, $param=NULL, $header);
+        $reward = $this->request ($method, $endpoint, $param=NULL, $header); 
 
         $json = json_decode($reward);
 
@@ -159,8 +178,6 @@ $bocom = new bookingcom();
 echo "Enter...";
 trim(fgets(STDIN));
 
-$header[] = 'Authorization: Basic dGhlc2FpbnRzYnY6ZGdDVnlhcXZCeGdN';
-
 $file = dirname(__FILE__)."/akun.txt";
 
 $file2 = dirname(__FILE__)."/akun_valid.txt";
@@ -190,12 +207,12 @@ if(file_exists($file)) {
 
         if($check->next_step == 'redirect') { 
 
-            $login_apk = $bocom->login_apk($email, $password, $device_id, $header);
+            $login_apk = $bocom->login_apk($email, $password, $device_id);
 
             if(!isset($login_apk->auth_token)) {
                 echo "[".$no++."] ACTIVE - ".$email." Check Reward Later [".$login_apk->message."]\n";
             } else {
-                $reward = $bocom->reward($device_id, $login_apk->auth_token, $header);
+                $reward = $bocom->reward($device_id, $login_apk->auth_token);
 
                 $rewarded  = $reward->data->programs[0]->groups[0]->rewards[0]->status->name;
 
@@ -213,12 +230,12 @@ if(file_exists($file)) {
             fclose($fh);
           
         } elseif ($check->next_step == '/account-disabled') {
-            $login_apk = $bocom->login_apk($email, $password, $device_id, $header);
+            $login_apk = $bocom->login_apk($email, $password, $device_id);
 
             if(!isset($login_apk->auth_token)) {
                 echo "[".$no++."] BANNED - ".$email." Check Reward Later [".$login_apk->message."]\n";
             } else {
-                $reward = $bocom->reward($device_id, $login_apk->auth_token, $header);
+                $reward = $bocom->reward($device_id, $login_apk->auth_token);
 
                 $rewarded  = $reward->data->programs[0]->groups[0]->rewards[0]->status->name;
 
@@ -235,10 +252,8 @@ if(file_exists($file)) {
             fwrite($fh, $email.";".$password.";BANNED;".$rewarded."\n");
             fclose($fh);
 
-        } elseif ($check->errors[0] == 1203) {
-            echo "[".$no++."] ".$email." [".$check->errors[0]."] SALAH PASSWORD\n"; 
-        } elseif ($check->errors[0] == 1302) {
-            echo "[".$no++."] ".$email." [".$check->errors[0]."] TIDAK TERDAFTAR\n"; 
+        } elseif (isset($check->errors[0])) {
+            echo "[".$no++."] ".$email." [".$check->errors[0]."] ERROR\n";  
         } else {
             echo "[!] UNKNOWN ERROR: ".$check."\n"; 
             sleep(2);
@@ -251,4 +266,3 @@ if(file_exists($file)) {
 } else {
     goto start;
 }
-
