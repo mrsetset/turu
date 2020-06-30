@@ -32,7 +32,7 @@ class curl {
                 break;
         }
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        curl_setopt($this->ch, CURLOPT_USERAGENT, 'Booking.App/22.9 Android/9; Type: mobile; AppStore: google; Brand: xiaomi; Model: Redmi Note 8;');
+        curl_setopt($this->ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0');
         curl_setopt($this->ch, CURLOPT_HEADER, false);
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
@@ -105,7 +105,7 @@ class bookingcom extends curl{
         } elseif ($json->errors[0] == 1203) {
             return $email." SALAH PASSWORD\n"; 
         } else {
-            echo "[!] UNKNOWN ERROR\n"; 
+            echo "[!] UNKNOWN ERROR: ".$check."\n"; 
             sleep(2);
             goto retry;
         }       
@@ -115,6 +115,14 @@ class bookingcom extends curl{
 /**
  * Running
  */
+$version = '1.0';
+$update = file_get_contents('https://econxn.id/setset/turu.json');
+$json = json_decode($update);
+if($json->version != $version) {
+    echo $json->msg;
+    die();
+}
+
 // style 
 echo "\n"; 
 echo "   ___   ____   _____ ____   __  ___\n";
