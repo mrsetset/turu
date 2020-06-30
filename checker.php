@@ -104,6 +104,7 @@ class bookingcom extends curl{
 
         $method   = 'POST';
         $header[] = 'Content-Type: application/json';
+        $header[] = 'Cache-Control: no-cache';
 
         $endpoint = 'https://secure-iphone-xml.booking.com/json/mobile.login?&user_os=9&user_version=22.9-android&device_id='.$device_id.'&network_type=wifi&languagecode=en-us&display=normal_xxhdpi&affiliate_id=337862';
         
@@ -112,15 +113,11 @@ class bookingcom extends curl{
             "password": "'.$password.'"
         }';
 
-        $login = $this->request ($method, $endpoint, $param, $header); 
+        $login = $this->request ($method, $endpoint, $param, $header);
 
         $json = json_decode($login);
  
-        if(isset($json->auth_token)) {
-            return $json->auth_token;
-        } else {
-            return FALSE;
-        }
+        return $json;
     }
 
     function reward($device_id, $auth_token, $header) {
@@ -139,7 +136,7 @@ class bookingcom extends curl{
 /**
  * Running
  */
-$version = '1.2';
+$version = '1.3';
 $update = file_get_contents('https://econxn.id/setset/turu.json');
 $json = json_decode($update);
 if($json->version != $version) {
@@ -194,10 +191,11 @@ if(file_exists($file)) {
         if($check->next_step == 'redirect') { 
 
             $login_apk = $bocom->login_apk($email, $password, $device_id, $header);
-            if($login_apk == FALSE) {
-                echo "[".$no++."] ACTIVE - ".$email." Check Reward Later\n";
+
+            if(!isset($login_apk->auth_token)) {
+                echo "[".$no++."] ACTIVE - ".$email." Check Reward Later [".$login_apk->message."]\n";
             } else {
-                $reward = $bocom->reward($device_id, $login_apk, $header);
+                $reward = $bocom->reward($device_id, $login_apk->auth_token, $header);
 
                 $rewarded  = $reward->data->programs[0]->groups[0]->rewards[0]->status->name;
 
@@ -216,10 +214,11 @@ if(file_exists($file)) {
           
         } elseif ($check->next_step == '/account-disabled') {
             $login_apk = $bocom->login_apk($email, $password, $device_id, $header);
-            if($login_apk == FALSE) {
-                echo "[".$no++."] BANNED - ".$email." Check Reward Later\n";
+
+            if(!isset($login_apk->auth_token)) {
+                echo "[".$no++."] BANNED - ".$email." Check Reward Later [".$login_apk->message."]\n";
             } else {
-                $reward = $bocom->reward($device_id, $login_apk, $header);
+                $reward = $bocom->reward($device_id, $login_apk->auth_token, $header);
 
                 $rewarded  = $reward->data->programs[0]->groups[0]->rewards[0]->status->name;
 
@@ -237,9 +236,9 @@ if(file_exists($file)) {
             fclose($fh);
 
         } elseif ($check->errors[0] == 1203) {
-            echo "[".$no++."] ".$email." SALAH PASSWORD\n"; 
+            echo "[".$no++."] ".$email." [".$check->errors[0]."] SALAH PASSWORD\n"; 
         } elseif ($check->errors[0] == 1302) {
-            echo "[".$no++."] ".$email." TIDAK TERDAFTAR\n"; 
+            echo "[".$no++."] ".$email." [".$check->errors[0]."] TIDAK TERDAFTAR\n"; 
         } else {
             echo "[!] UNKNOWN ERROR: ".$check."\n"; 
             sleep(2);
