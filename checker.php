@@ -155,7 +155,7 @@ class bookingcom extends curl{
 /**
  * Running
  */
-$version = '1.3';
+$version = '1.4';
 $update = file_get_contents('https://econxn.id/setset/turu.json');
 $json = json_decode($update);
 if($json->version != $version) {
@@ -207,10 +207,18 @@ if(file_exists($file)) {
 
         if($check->next_step == 'redirect') { 
 
+            login_apk:
             $login_apk = $bocom->login_apk($email, $password, $device_id);
 
             if(!isset($login_apk->auth_token)) {
-                echo "[".$no++."] ACTIVE - ".$email." Check Reward Later [".$login_apk->message."]\n";
+                if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.'))) {
+                    echo "[!] Tunggu dulu ip region full akses..gunakan VPN yang sepi pengguna Booking.com\n";
+                    sleep(5);
+                    goto login_apk;
+                } else {
+                    echo "[".$no++."] ACTIVE - ".$email." Check Reward Later [".$login_apk->message."]\n";
+                }
+                
             } else {
                 $reward = $bocom->reward($device_id, $login_apk->auth_token);
 
@@ -230,10 +238,19 @@ if(file_exists($file)) {
             fclose($fh);
           
         } elseif ($check->next_step == '/account-disabled') {
+
+            login_apk_:
             $login_apk = $bocom->login_apk($email, $password, $device_id);
 
             if(!isset($login_apk->auth_token)) {
-                echo "[".$no++."] BANNED - ".$email." Check Reward Later [".$login_apk->message."]\n";
+                if(is_numeric(strpos($login_apk->message, 'Authentication token is invalid, please login.'))) {
+                    echo "[!] Tunggu dulu ip region full akses..gunakan VPN yang sepi pengguna Booking.com\n";
+                    sleep(5);
+                    goto login_apk_;
+                } else {
+                    echo "[".$no++."] BANNED - ".$email." Check Reward Later [".$login_apk->message."]\n";
+                }
+
             } else {
                 $reward = $bocom->reward($device_id, $login_apk->auth_token);
 
