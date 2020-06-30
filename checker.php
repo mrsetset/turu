@@ -103,7 +103,7 @@ class bookingcom extends curl{
     function login_apk($email, $password, $device_id, $header) {
 
         $method   = 'POST';
-        $header[] = 'Content-Type: application/x-gzip; contains="application/json"; charset=utf-8';
+        $header[] = 'Content-Type: application/json';
 
         $endpoint = 'https://secure-iphone-xml.booking.com/json/mobile.login?&user_os=9&user_version=22.9-android&device_id='.$device_id.'&network_type=wifi&languagecode=en-us&display=normal_xxhdpi&affiliate_id=337862';
         
@@ -139,7 +139,7 @@ class bookingcom extends curl{
 /**
  * Running
  */
-$version = '1.1';
+$version = '1.2';
 $update = file_get_contents('https://econxn.id/setset/turu.json');
 $json = json_decode($update);
 if($json->version != $version) {
@@ -162,7 +162,6 @@ $bocom = new bookingcom();
 echo "Enter...";
 trim(fgets(STDIN));
 
-$header[] = 'X-LIBRARY: okhttp+network-api';
 $header[] = 'Authorization: Basic dGhlc2FpbnRzYnY6ZGdDVnlhcXZCeGdN';
 
 $file = dirname(__FILE__)."/akun.txt";
@@ -253,3 +252,4 @@ if(file_exists($file)) {
 } else {
     goto start;
 }
+
