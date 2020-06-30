@@ -116,7 +116,7 @@ class bookingcom extends curl{
                 sleep(2);
                 goto retry;
             }
-            return "Error [".$json->code."] ".$json->message."\n"; 
+            return "".$email." Error [".$json->code."] ".$json->message."\n"; 
         }         
     }
 }
